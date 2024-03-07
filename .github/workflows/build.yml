@@ -154,3 +154,4 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: run cabal check
         run: nix develop -c cabal check --verbose=3
+
