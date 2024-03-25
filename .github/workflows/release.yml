@@ -62,6 +62,7 @@ jobs:
           files: |
             ./hevm-x86_64-linux
             ./hevm-x86_64-macos
+            ./hevm-arm64-macos
       - name: prepare hackage artifacts
         run: |
           nix-shell --command "cabal sdist --builddir=${{ runner.temp }}/packages"
