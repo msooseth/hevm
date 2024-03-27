@@ -5,9 +5,9 @@ on:
       - 'release/[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
-  macosRelease:
-    name: Build MacOS Binary
-    runs-on: macos-latest
+  macosRelease-x64:
+    name: Build MacOS-x64 Binary
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v3
       - uses: DeterminateSystems/nix-installer-action@main
@@ -20,9 +20,25 @@ jobs:
         with:
           name: hevm-x86_64-macos
           path: ./hevm-x86_64-macos
+  macosRelease-ARM:
+    name: Build MacOS-ARM64 Binary
+    runs-on: macos-13-arm64
+    steps:
+      - uses: actions/checkout@v3
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: build hevm
+        run: |
+          nix build .#redistributable --out-link hevmMacos
+          cp ./hevmMacos/bin/hevm ./hevm-arm64-macos
+      - uses: actions/upload-artifact@v3
+        with:
+          name: hevm-arm64-macos
+          path: ./hevm-arm64-macos
+          
   linuxRelease:
     name: Create Release
-    needs: macosRelease
+    needs: [macosRelease-ARM, macosRelease-x64]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -32,16 +48,25 @@ jobs:
         run: |
           nix build .#redistributable --out-link hevmLinux
           cp ./hevmLinux/bin/hevm ./hevm-x86_64-linux
+      - uses: actions/upload-artifact@v3
+        with:
+          name: hevm-x86_64-linux
+          path: ./hevm-x86_64-linux
       - name: download macos binary
         uses: actions/download-artifact@v3
         with:
           name: hevm-x86_64-macos
+      - name: download macos binary2
+        uses: actions/download-artifact@v3
+        with:
+          name: hevm-arm64-macos
       - name: create github release & upload binaries
         uses: softprops/action-gh-release@v0.1.15
         with:
           files: |
             ./hevm-x86_64-linux
             ./hevm-x86_64-macos
+            ./hevm-arm64-macos
       - name: prepare hackage artifacts
         run: |
           nix-shell --command "cabal sdist --builddir=${{ runner.temp }}/packages"
@@ -53,4 +78,3 @@ jobs:
           packagesPath: ${{ runner.temp }}/packages/sdist
           docsPath: ${{ runner.temp }}/docs
           publish: true
-
