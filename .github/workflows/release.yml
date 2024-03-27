@@ -7,7 +7,7 @@ on:
 jobs:
   macosRelease-x64:
     name: Build MacOS-x64 Binary
-    runs-on: macos-13-x64
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v3
       - uses: DeterminateSystems/nix-installer-action@main
@@ -22,7 +22,7 @@ jobs:
           path: ./hevm-x86_64-macos
   macosRelease-ARM:
     name: Build MacOS-ARM64 Binary
-    runs-on: macos-13-arm64
+    runs-on: macos-14-arm64
     steps:
       - uses: actions/checkout@v3
       - uses: DeterminateSystems/nix-installer-action@main
