@@ -78,6 +78,7 @@ data Command w
   -- symbolic execution opts
       , root          :: w ::: Maybe String       <?> "Path to  project root directory (default: . )"
       , projectType   :: w ::: Maybe ProjectType  <?> "Is this a CombinedJSON or Foundry project (default: Foundry)"
+      , dsTest        :: w ::: Bool               <?> "Check the fail bit set by ds-test"
       , initialStorage :: w ::: Maybe (InitialStorage) <?> "Starting state for storage: Empty, Abstract (default Abstract)"
       , sig           :: w ::: Maybe Text         <?> "Signature of types to decode / encode"
       , arg           :: w ::: [String]           <?> "Values to encode"
@@ -148,10 +149,12 @@ data Command w
       , block       :: w ::: Maybe W256        <?> "Block state is be fetched from"
       , root        :: w ::: Maybe String      <?> "Path to  project root directory (default: . )"
       , projectType :: w ::: Maybe ProjectType <?> "Is this a CombinedJSON or Foundry project (default: Foundry)"
+      , dsTest      :: w ::: Bool              <?> "Check the fail bit set by ds-test"
       }
   | Test -- Run Foundry unit tests
       { root        :: w ::: Maybe String               <?> "Path to  project root directory (default: . )"
       , projectType   :: w ::: Maybe ProjectType        <?> "Is this a CombinedJSON or Foundry project (default: Foundry)"
+      , dsTest        :: w ::: Bool                     <?> "Check the fail bit set by ds-test"
       , rpc           :: w ::: Maybe URL                <?> "Fetch state from a remote node"
       , number        :: w ::: Maybe W256               <?> "Block: number"
       , verbose       :: w ::: Maybe Int                <?> "Append call trace: {1} failures {2} all"
@@ -304,7 +307,7 @@ getSrcInfo cmd = do
       buildOutput <- runEnv Env {config = conf} $ readBuildOutput root (getProjectType cmd)
       case buildOutput of
         Left _ -> pure emptyDapp
-        Right o -> pure $ dappInfo root o
+        Right o -> pure $ dappInfo False root o
     else pure emptyDapp
 
 getProjectType :: Command Options.Unwrapped -> ProjectType
@@ -674,6 +677,7 @@ unitTestOptions cmd solvers buildOutput = do
     , testParams = params
     , dapp = srcInfo
     , ffiAllowed = cmd.ffi
+    , checkFailBit = cmd.dsTest
     }
 parseInitialStorage :: InitialStorage -> BaseState
 parseInitialStorage Empty = EmptyBase

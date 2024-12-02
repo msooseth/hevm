@@ -59,6 +59,7 @@ testOpts solvers root buildOutput match maxIter allowFFI rpcinfo = do
     , testParams = params
     , dapp = srcInfo
     , ffiAllowed = allowFFI
+    , checkFailBit = False
     }
 
 processFailedException :: String -> String -> [String] -> Int -> IO a
